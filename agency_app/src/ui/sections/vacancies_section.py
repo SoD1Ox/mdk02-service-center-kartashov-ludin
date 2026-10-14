@@ -5,6 +5,7 @@ from src.ui.sections.base_crud import CrudSection
 class VacanciesSection(CrudSection):
     section_key = "vacancies"
     entity_type = "vacancy"
+    icon_name = "briefcase"
     title = "Вакансии"
     subtitle = "Открытые позиции работодателей"
     columns = ["id", "Работодатель", "Должность", "Требования", "Зарплата", "Статус"]

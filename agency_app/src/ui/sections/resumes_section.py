@@ -5,6 +5,7 @@ from src.ui.sections.base_crud import CrudSection
 class ResumesSection(CrudSection):
     section_key = "resumes"
     entity_type = "resume"
+    icon_name = "doc"
     title = "Резюме"
     subtitle = "Резюме соискателей"
     columns = ["id", "Соискатель", "Должность", "Опыт", "Образование"]

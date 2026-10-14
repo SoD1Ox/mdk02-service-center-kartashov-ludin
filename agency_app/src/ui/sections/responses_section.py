@@ -5,6 +5,7 @@ from src.ui.sections.base_crud import CrudSection
 class ResponsesSection(CrudSection):
     section_key = "responses"
     entity_type = "response"
+    icon_name = "mail"
     title = "Отклики"
     subtitle = "Отклики соискателей на вакансии"
     columns = ["id", "Соискатель", "Вакансия", "Статус"]
