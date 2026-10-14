@@ -1,32 +1,49 @@
 from src.db.connection import get_connection, DB_PATH
+from src.services.audit_service import log_action
 
 
 def get_all(db_path=DB_PATH):
     with get_connection(db_path) as conn:
         rows = conn.execute("""
-            SELECT id, response_id, commission, tax, closed_at
-            FROM deals
+            SELECT d.id, d.response_id, d.commission, d.tax, d.closed_at,
+                   d.created_by, d.updated_by, d.updated_at
+            FROM deals d
+            ORDER BY d.id
         """).fetchall()
         return [dict(r) for r in rows]
 
 
-def create(response_id, commission, tax, db_path=DB_PATH):
+def create(response_id, commission, tax,
+           user_login="system", user_role="system", db_path=DB_PATH):
     with get_connection(db_path) as conn:
         cur = conn.execute(
-            "INSERT INTO deals (response_id, commission, tax) VALUES (?, ?, ?)",
-            (response_id, commission, tax),
+            """INSERT INTO deals
+                   (response_id, commission, tax, created_by, updated_by, updated_at)
+               VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)""",
+            (response_id, commission, tax, user_login, user_login),
         )
-        return cur.lastrowid
+        did = cur.lastrowid
+    log_action(user_login, user_role, "CREATE", "deal", did,
+               f"Комиссия: {commission} ₽ по отклику #{response_id}", db_path)
+    return did
 
 
-def update(deal_id, response_id, commission, tax, db_path=DB_PATH):
+def update(deal_id, response_id, commission, tax,
+           user_login="system", user_role="system", db_path=DB_PATH):
     with get_connection(db_path) as conn:
         conn.execute(
-            "UPDATE deals SET response_id=?, commission=?, tax=? WHERE id=?",
-            (response_id, commission, tax, deal_id),
+            """UPDATE deals
+               SET response_id=?, commission=?, tax=?,
+                   updated_by=?, updated_at=CURRENT_TIMESTAMP
+               WHERE id=?""",
+            (response_id, commission, tax, user_login, deal_id),
         )
+    log_action(user_login, user_role, "UPDATE", "deal", deal_id,
+               f"Комиссия: {commission} ₽", db_path)
 
 
-def delete(deal_id, db_path=DB_PATH):
+def delete(deal_id, user_login="system", user_role="system", db_path=DB_PATH):
     with get_connection(db_path) as conn:
         conn.execute("DELETE FROM deals WHERE id=?", (deal_id,))
+    log_action(user_login, user_role, "DELETE", "deal", deal_id,
+               None, db_path)

@@ -17,8 +17,8 @@ PERMISSIONS = {
         "vacancies":  ["view", "add", "edit"],
         "responses":  ["view", "add", "edit"],
         "deals":      ["view", "add", "edit"],
-        # менеджер видит действия директора, менеджера и свои
-        "audit":      ["view", "view_director_and_manager"],
+        # менеджер видит действия администратора, директора, менеджеров и свои
+        "audit":      ["view", "view_admin_director_manager"],
     },
     "director": {
         "candidates": ["view"],
