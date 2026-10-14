@@ -18,12 +18,30 @@ def get_connection(db_path=DB_PATH):
         conn.close()
 
 
+def _migrate(conn):
+    """
+    Простая миграция «на лету»: добавляет отсутствующие столбцы
+    created_by / updated_by / updated_at в бизнес-таблицы.
+    Нужно, чтобы старые файлы agency.db работали с новой схемой.
+    """
+    tables = ["candidates", "resumes", "skills", "employers",
+              "vacancies", "responses", "deals"]
+    new_cols = ["created_by TEXT", "updated_by TEXT", "updated_at TIMESTAMP"]
+    for t in tables:
+        existing = {r["name"] for r in conn.execute(f"PRAGMA table_info({t})")}
+        for col in new_cols:
+            name = col.split()[0]
+            if name not in existing:
+                conn.execute(f"ALTER TABLE {t} ADD COLUMN {col}")
+
+
 def init_db(db_path=DB_PATH, with_seed=True):
     with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
         schema = f.read()
 
     with get_connection(db_path) as conn:
         conn.executescript(schema)
+        _migrate(conn)
         count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
 
     if with_seed and count == 0:

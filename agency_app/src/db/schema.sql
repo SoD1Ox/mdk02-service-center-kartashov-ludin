@@ -23,7 +23,10 @@ CREATE TABLE IF NOT EXISTS candidates (
     email TEXT UNIQUE,
     status TEXT NOT NULL DEFAULT 'ищет работу',
     consent_revoked TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by TEXT,               -- кто создал запись
+    updated_by TEXT,               -- кто изменил последним
+    updated_at TIMESTAMP           -- когда изменили последний раз
 );
 
 CREATE TABLE IF NOT EXISTS resumes (
@@ -33,13 +36,19 @@ CREATE TABLE IF NOT EXISTS resumes (
     experience INTEGER NOT NULL DEFAULT 0,
     education TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by TEXT,
+    updated_by TEXT,
+    updated_at TIMESTAMP,
     FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS skills (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL,
-    category TEXT
+    category TEXT,
+    created_by TEXT,
+    updated_by TEXT,
+    updated_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS resume_skills (
@@ -55,7 +64,11 @@ CREATE TABLE IF NOT EXISTS employers (
     name TEXT NOT NULL,
     inn TEXT UNIQUE,
     contact_person TEXT,
-    phone TEXT
+    phone TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by TEXT,
+    updated_by TEXT,
+    updated_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS vacancies (
@@ -67,6 +80,9 @@ CREATE TABLE IF NOT EXISTS vacancies (
     status TEXT NOT NULL DEFAULT 'Открыта'
         CHECK (status IN ('Открыта', 'На рассмотрении', 'Закрыта')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by TEXT,
+    updated_by TEXT,
+    updated_at TIMESTAMP,
     FOREIGN KEY (employer_id) REFERENCES employers(id) ON DELETE CASCADE
 );
 
@@ -85,6 +101,9 @@ CREATE TABLE IF NOT EXISTS responses (
     status TEXT NOT NULL DEFAULT 'На рассмотрении'
         CHECK (status IN ('На рассмотрении', 'Собеседование', 'Трудоустроен', 'Отклонён', 'Отозван')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by TEXT,
+    updated_by TEXT,
+    updated_at TIMESTAMP,
     UNIQUE (candidate_id, vacancy_id),
     FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE,
     FOREIGN KEY (vacancy_id) REFERENCES vacancies(id) ON DELETE CASCADE
@@ -96,6 +115,9 @@ CREATE TABLE IF NOT EXISTS deals (
     commission INTEGER NOT NULL DEFAULT 0 CHECK (commission >= 0),
     tax INTEGER NOT NULL DEFAULT 0 CHECK (tax >= 0),
     closed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by TEXT,
+    updated_by TEXT,
+    updated_at TIMESTAMP,
     FOREIGN KEY (response_id) REFERENCES responses(id) ON DELETE CASCADE
 );
 
@@ -121,3 +143,9 @@ CREATE TABLE IF NOT EXISTS audit_log (
     details TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Индексы для быстрых выборок журнала и таблиц
+CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_role ON audit_log (user_role);
+CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_log (user_login);
+CREATE INDEX IF NOT EXISTS idx_status_hist ON status_history (entity_type, entity_id);
