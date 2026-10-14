@@ -1,9 +1,4 @@
-"""
-Единая тема оформления приложения (QSS-стили + палитра).
-
-Все разделы и окна берут цвета и стили отсюда, чтобы интерфейс
-выглял единообразно и легко настраивался в одном месте.
-"""
+"""Единое оформление приложения: палитра, подписи и QSS для всех окон."""
 
 # ---------------- Палитра ----------------
 COLORS = {
@@ -88,6 +83,7 @@ def main_qss() -> str:
         color: {c['sidebar_text']};
         font-size: 12px;
         padding: 2px 4px;
+        background: transparent;
     }}
     QLabel#Section {{
         color: {c['sidebar_text']};
@@ -96,6 +92,7 @@ def main_qss() -> str:
         padding-top: 14px;
         padding-left: 6px;
         letter-spacing: 1px;
+        background: transparent;
     }}
     QListWidget#Nav {{
         background: {c['sidebar']};
@@ -137,22 +134,33 @@ def main_qss() -> str:
         font-weight: bold;
         color: {c['text']};
         padding-bottom: 2px;
+        background: transparent;
     }}
     QLabel#Subtitle {{
         font-size: 13px;
         color: {c['muted']};
         padding-bottom: 10px;
+        background: transparent;
     }}
     QLabel#GroupBox {{
         font-size: 14px;
         font-weight: bold;
         color: {c['text']};
+        background: transparent;
     }}
 
     QFrame#Card {{
         background: {c['card']};
         border: 1px solid {c['border']};
         border-radius: 10px;
+    }}
+
+    /* Карточка истории изменений под записью */
+    QFrame#HistoryCard {{
+        background: #f2f7ff;
+        border: 1px solid #c9dcf5;
+        border-left: 4px solid {c['primary']};
+        border-radius: 8px;
     }}
 
     /* ---------- Таблицы ---------- */
@@ -228,13 +236,15 @@ def main_qss() -> str:
 
 
 def login_qss() -> str:
-    """QSS для окна входа (тёмный градиентный фон карточки)."""
+    """QSS для окна входа (тёмная подложка + светлая карточка)."""
     c = COLORS
     return f"""
     QWidget {{
         font-family: 'Segoe UI', 'Arial', sans-serif;
         font-size: 13px;
         color: {c['text']};
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+            stop:0 #1d2433, stop:1 #2f3a52);
     }}
     QFrame#LoginCard {{
         background: {c['card']};
@@ -245,12 +255,14 @@ def login_qss() -> str:
         font-size: 20px;
         font-weight: bold;
         color: {c['text']};
+        background: transparent;
     }}
     QLabel#LoginSub {{
         font-size: 12px;
         color: {c['muted']};
+        background: transparent;
     }}
-    QLabel {{ color: {c['text']}; }}
+    QLabel {{ color: {c['text']}; background: transparent; }}
     QLineEdit {{
         background: #f7f9fc;
         border: 1px solid {c['border']};
@@ -268,5 +280,5 @@ def login_qss() -> str:
         font-weight: bold;
     }}
     QPushButton#LoginBtn:hover {{ background: {c['primary_dark']}; }}
-    QLabel#Hint {{ color: {c['muted']}; font-size: 11px; }}
+    QLabel#Hint {{ color: {c['muted']}; font-size: 11px; background: transparent; }}
     """
