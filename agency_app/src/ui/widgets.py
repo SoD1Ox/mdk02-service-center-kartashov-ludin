@@ -25,13 +25,17 @@ class StatCard(QFrame):
         lay.setSpacing(2)
 
         lbl_title = QLabel(title)
-        lbl_title.setStyleSheet(f"color: {COLORS['muted']}; font-size: 12px; border: none; background: transparent;")
+        lbl_title.setStyleSheet(
+            f"color: {COLORS['muted']}; font-size: 12px; border: none;"
+            " background: transparent;"
+        )
         lay.addWidget(lbl_title)
 
         self.value_label = QLabel(str(value))
         color = accent or COLORS["primary"]
         self.value_label.setStyleSheet(
-            f"color: {color}; font-size: 20px; font-weight: bold; border: none; background: transparent;"
+            f"color: {color}; font-size: 20px; font-weight: bold; border: none;"
+            " background: transparent;"
         )
         lay.addWidget(self.value_label)
 
@@ -56,7 +60,7 @@ def history_card(entity_type, entity_id, max_lines=6):
     lay.setContentsMargins(14, 8, 14, 8)
     lay.setSpacing(3)
 
-    head = QLabel(f"🕒 История изменений (последние {min(len(rows), max_lines)} из {len(rows)})")
+    head = QLabel(f"История изменений (последние {min(len(rows), max_lines)} из {len(rows)})")
     head.setStyleSheet(
         f"color: {COLORS['muted']}; font-weight: bold; font-size: 12px; border: none; background: transparent;"
     )

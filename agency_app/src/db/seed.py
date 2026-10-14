@@ -25,6 +25,7 @@ def seed_data(db_path=DB_PATH):
             )
 
         # --- SKILLS (6) ---
+        skill_ids = []
         for name, cat in [
             ("Python", "Программирование"),
             ("SQL", "Базы данных"),
@@ -33,10 +34,14 @@ def seed_data(db_path=DB_PATH):
             ("Тестирование", "QA"),
             ("Git", "Инструменты"),
         ]:
-            conn.execute(
-                "INSERT OR IGNORE INTO skills (name, category) VALUES (?, ?)",
+            skill_ids.append(conn.execute(
+                "SELECT id FROM skills WHERE name=?", (name,)
+            ).fetchone()[0] if conn.execute(
+                "SELECT 1 FROM skills WHERE name=?", (name,)
+            ).fetchone() else conn.execute(
+                "INSERT INTO skills (name, category) VALUES (?, ?)",
                 (name, cat),
-            )
+            ).lastrowid)
 
         # --- CANDIDATES (3) ---
         candidate_ids = []
@@ -98,9 +103,9 @@ def seed_data(db_path=DB_PATH):
 
         # --- RESUME_SKILLS ---
         for rid, sid in [
-            (resume_ids[0], 1), (resume_ids[0], 2), (resume_ids[0], 3),
-            (resume_ids[1], 2), (resume_ids[1], 4),
-            (resume_ids[2], 5), (resume_ids[2], 6),
+            (resume_ids[0], skill_ids[0]), (resume_ids[0], skill_ids[1]), (resume_ids[0], skill_ids[2]),
+            (resume_ids[1], skill_ids[1]), (resume_ids[1], skill_ids[3]),
+            (resume_ids[2], skill_ids[4]), (resume_ids[2], skill_ids[5]),
         ]:
             conn.execute(
                 "INSERT OR IGNORE INTO resume_skills (resume_id, skill_id) VALUES (?, ?)",
@@ -109,9 +114,9 @@ def seed_data(db_path=DB_PATH):
 
         # --- VACANCY_SKILLS ---
         for vid, sid in [
-            (vacancy_ids[0], 1), (vacancy_ids[0], 2), (vacancy_ids[0], 3),
-            (vacancy_ids[1], 2), (vacancy_ids[1], 4),
-            (vacancy_ids[2], 5), (vacancy_ids[2], 6),
+            (vacancy_ids[0], skill_ids[0]), (vacancy_ids[0], skill_ids[1]), (vacancy_ids[0], skill_ids[2]),
+            (vacancy_ids[1], skill_ids[1]), (vacancy_ids[1], skill_ids[3]),
+            (vacancy_ids[2], skill_ids[4]), (vacancy_ids[2], skill_ids[5]),
         ]:
             conn.execute(
                 "INSERT OR IGNORE INTO vacancy_skills (vacancy_id, skill_id) VALUES (?, ?)",

@@ -95,7 +95,7 @@ def get_history(entity_type, entity_id, db_path=DB_PATH):
 
 
 def format_row(row):
-    """Человекочитаемая строка вида: 🕒 12.10 14:30 • Иванов • Изменение • Резюме №3."""
+    """Человекочитаемая строка вида: 12.10 14:30 • Иванов • Изменение • Резюме №3."""
     from src.ui.theme import ACTION_LABELS, ENTITY_LABELS
 
     ts = str(row.get("created_at") or "")[:16]
@@ -107,7 +107,7 @@ def format_row(row):
         pass
     action = ACTION_LABELS.get(row.get("action"), row.get("action") or "")
     entity = ENTITY_LABELS.get(row.get("entity_type"), row.get("entity_type") or "")
-    text = f"🕒 {ts} • {row.get('user_login', '')} ({row.get('user_role', '')}) • {action} • {entity}"
+    text = f"{ts} • {row.get('user_login', '')} ({row.get('user_role', '')}) • {action} • {entity}"
     if row.get("entity_id") is not None:
         text += f" №{row['entity_id']}"
     if row.get("details"):

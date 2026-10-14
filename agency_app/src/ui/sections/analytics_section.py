@@ -1,8 +1,10 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QTableWidget,
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QTableWidget,
     QTableWidgetItem, QHeaderView, QPushButton,
 )
 from src.db.connection import get_connection, DB_PATH
+from src.ui.theme import COLORS
+from src.ui.widgets import StatCard
 
 
 class AnalyticsSection(QWidget):
@@ -15,47 +17,70 @@ class AnalyticsSection(QWidget):
         self._build_ui()
         self.load_data()
 
+    def _table(self, headers):
+        card = QFrame()
+        card.setObjectName("Card")
+        lay = QVBoxLayout(card)
+        lay.setContentsMargins(8, 8, 8, 8)
+        t = QTableWidget()
+        t.setColumnCount(len(headers))
+        t.setHorizontalHeaderLabels(headers)
+        t.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        t.setEditTriggers(QTableWidget.NoEditTriggers)
+        t.verticalHeader().setVisible(False)
+        t.setAlternatingRowColors(True)
+        lay.addWidget(t)
+        return card, t
+
     def _build_ui(self):
-        layout = QVBoxLayout()
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 20, 24, 20)
+        layout.setSpacing(12)
 
         title = QLabel("Аналитика")
-        title.setStyleSheet("font-size: 18px; font-weight: bold;")
+        title.setObjectName("PageTitle")
         layout.addWidget(title)
 
-        # Отклики по статусам
-        layout.addWidget(QLabel("Отклики по статусам:"))
-        self.table_responses = QTableWidget()
-        self.table_responses.setColumnCount(2)
-        self.table_responses.setHorizontalHeaderLabels(["Статус", "Количество"])
-        self.table_responses.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table_responses.setEditTriggers(QTableWidget.NoEditTriggers)
-        layout.addWidget(self.table_responses)
+        sub = QLabel("Статистика по статусам и средние показатели")
+        sub.setObjectName("Subtitle")
+        layout.addWidget(sub)
 
-        # Вакансии по статусам
-        layout.addWidget(QLabel("Вакансии по статусам:"))
-        self.table_vacancies = QTableWidget()
-        self.table_vacancies.setColumnCount(2)
-        self.table_vacancies.setHorizontalHeaderLabels(["Статус", "Количество"])
-        self.table_vacancies.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table_vacancies.setEditTriggers(QTableWidget.NoEditTriggers)
-        layout.addWidget(self.table_vacancies)
+        # Карточки средних значений
+        row1 = QHBoxLayout()
+        self.card_salary = StatCard("Средняя зарплата", "—", accent=COLORS["primary"])
+        self.card_commission = StatCard("Средняя комиссия", "—", accent=COLORS["success"])
+        row1.addWidget(self.card_salary)
+        row1.addWidget(self.card_commission)
+        layout.addLayout(row1)
 
-        # Средняя зарплата
-        layout.addWidget(QLabel("Средняя зарплата по вакансиям:"))
-        self.lbl_salary = QLabel("—")
-        layout.addWidget(self.lbl_salary)
+        # Два таблицы рядом
+        tables_row = QHBoxLayout()
 
-        # Средняя комиссия
-        layout.addWidget(QLabel("Средняя комиссия по сделкам:"))
-        self.lbl_commission = QLabel("—")
-        layout.addWidget(self.lbl_commission)
+        col_resp = QVBoxLayout()
+        lbl_resp = QLabel("Отклики по статусам")
+        lbl_resp.setObjectName("GroupBox")
+        col_resp.addWidget(lbl_resp)
+        card_resp, self.table_responses = self._table(["Статус", "Количество"])
+        col_resp.addWidget(card_resp)
+        tables_row.addLayout(col_resp)
 
-        btn = QPushButton("Обновить")
+        col_vac = QVBoxLayout()
+        lbl_vac = QLabel("Вакансии по статусам")
+        lbl_vac.setObjectName("GroupBox")
+        col_vac.addWidget(lbl_vac)
+        card_vac, self.table_vacancies = self._table(["Статус", "Количество"])
+        col_vac.addWidget(card_vac)
+        tables_row.addLayout(col_vac)
+
+        layout.addLayout(tables_row, 1)
+
+        btn_row = QHBoxLayout()
+        btn = QPushButton("⟳  Обновить")
+        btn.setObjectName("Primary")
         btn.clicked.connect(self.load_data)
-        layout.addWidget(btn)
-
-        self.setLayout(layout)
+        btn_row.addWidget(btn)
+        btn_row.addStretch()
+        layout.addLayout(btn_row)
 
     def load_data(self):
         with get_connection(DB_PATH) as conn:
@@ -81,8 +106,8 @@ class AnalyticsSection(QWidget):
 
         self._fill(self.table_responses, resp)
         self._fill(self.table_vacancies, vac)
-        self.lbl_salary.setText(f"{avg_salary:.0f} ₽")
-        self.lbl_commission.setText(f"{avg_comm:.0f} ₽")
+        self.card_salary.set_value(f"{avg_salary:.0f} ₽")
+        self.card_commission.set_value(f"{avg_comm:.0f} ₽")
 
     def _fill(self, table, rows):
         table.setRowCount(0)

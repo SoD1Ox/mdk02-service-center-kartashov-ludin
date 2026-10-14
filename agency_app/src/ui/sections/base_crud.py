@@ -133,14 +133,14 @@ class CrudSection(QWidget):
 
         # Кнопки
         btns = QHBoxLayout()
-        self.btn_add = QPushButton("＋ Добавить")
+        self.btn_add = QPushButton("+  Добавить")
         self.btn_add.setObjectName("Primary")
         self.btn_add.clicked.connect(self.add_record)
 
-        self.btn_edit = QPushButton("✎ Изменить")
+        self.btn_edit = QPushButton("Изменить")
         self.btn_edit.clicked.connect(self.update_record)
 
-        self.btn_del = QPushButton("✕ Удалить")
+        self.btn_del = QPushButton("Удалить")
         self.btn_del.setObjectName("Danger")
         self.btn_del.clicked.connect(self.delete_record)
 
