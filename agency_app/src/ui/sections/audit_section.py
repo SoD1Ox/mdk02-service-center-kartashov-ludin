@@ -1,69 +1,123 @@
+"""
+Раздел «Журнал действий» — доступен только администратору.
+
+Остальные роли свои изменения видят прямо под выбранной записью
+в таблицах разделов (блок «История изменений» в CrudSection).
+"""
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QBrush, QColor, QFont
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QTableWidget, QTableWidgetItem, QLineEdit,
+    QHeaderView, QFrame,
 )
-from src.services.audit_service import get_all, get_for_roles, get_for_user
+
+from src.services.audit_service import visible_rows
+from src.services.permissions import can
+from src.ui.theme import COLORS, ACTION_LABELS, ROLE_LABELS
+
+
+ACTION_COLORS = {
+    "CREATE": COLORS["success"],
+    "UPDATE": COLORS["primary"],
+    "DELETE": COLORS["danger"],
+    "LOGIN": COLORS["warning"],
+}
 
 
 class AuditSection(QWidget):
-    """Журнал действий пользователей (аудит)."""
+    """Полный журнал действий (только admin)."""
 
     def __init__(self, role="admin", login=""):
         super().__init__()
         self.role = role
         self.login = login
+        self._all_rows = []
         self._build_ui()
-        self.load_data()
+        if can(self.role, "audit", "view"):
+            self.load_data()
 
     def _build_ui(self):
-        layout = QVBoxLayout()
-        layout.setContentsMargins(20, 20, 20, 20)
+        root = QVBoxLayout(self)
+        root.setContentsMargins(24, 20, 24, 20)
+        root.setSpacing(12)
 
-        layout.addWidget(QLabel(f"Журнал действий — {self.role}"))
+        title = QLabel("Журнал действий")
+        title.setObjectName("PageTitle")
+        root.addWidget(title)
 
-        # Поиск
-        search_layout = QHBoxLayout()
-        search_layout.addWidget(QLabel("Поиск:"))
+        sub = QLabel("Полный журнал виден только администратору. "
+                     "Остальные пользователи видят историю изменений прямо под записью в разделе.")
+        sub.setObjectName("Subtitle")
+        root.addWidget(sub)
+
+        if not can(self.role, "audit", "view"):
+            lock = QFrame()
+            lock.setObjectName("Card")
+            lay = QVBoxLayout(lock)
+            lay.setContentsMargins(20, 30, 20, 30)
+            lbl = QLabel("🔒 Доступ к журналу запрещён")
+            lbl.setAlignment(Qt.AlignCenter)
+            lbl.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLORS['danger']};")
+            lay.addWidget(lbl)
+            root.addWidget(lock)
+            root.addStretch()
+            return
+
+        # Панель фильтров
+        row = QHBoxLayout()
         self.search_input = QLineEdit()
-        search_layout.addWidget(self.search_input)
-        b = QPushButton("Найти"); b.clicked.connect(self.search); search_layout.addWidget(b)
-        b = QPushButton("Обновить"); b.clicked.connect(self.load_data); search_layout.addWidget(b)
-        layout.addLayout(search_layout)
+        self.search_input.setPlaceholderText("Поиск по пользователю, действию или объекту…")
+        self.search_input.textChanged.connect(self.apply_filter)
+        self.search_input.returnPressed.connect(self.apply_filter)
+        row.addWidget(self.search_input, 1)
+
+        btn_refresh = QPushButton("⟳ Обновить")
+        btn_refresh.setObjectName("Primary")
+        btn_refresh.clicked.connect(self.load_data)
+        row.addWidget(btn_refresh)
+        root.addLayout(row)
+
+        # Таблица журнала
+        card = QFrame()
+        card.setObjectName("Card")
+        card_lay = QVBoxLayout(card)
+        card_lay.setContentsMargins(8, 8, 8, 8)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(7)
+        self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(
-            ["id", "Пользователь", "Роль", "Действие", "Объект", "ID объекта", "Дата"]
+            ["Дата и время", "Пользователь", "Роль", "Действие", "Объект", "Подробности"]
         )
+        hh = self.table.horizontalHeader()
+        hh.setSectionResizeMode(QHeaderView.Stretch)
+        hh.setSectionResizeMode(5, QHeaderView.Stretch)
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SingleSelection)
         self.table.setEditTriggers(QTableWidget.NoEditTriggers)
-        layout.addWidget(self.table)
+        self.table.verticalHeader().setVisible(False)
+        card_lay.addWidget(self.table)
+        root.addWidget(card, 1)
 
-        self.setLayout(layout)
+        self.counter = QLabel("")
+        self.counter.setObjectName("Subtitle")
+        root.addWidget(self.counter)
 
-    def _fetch_data(self):
-        """Что показывать в зависимости от роли."""
-        if self.role == "admin":
-            return get_all()
-        if self.role == "manager":
-            # менеджер видит действия директора и менеджеров
-            return get_for_roles(["director", "manager"])
-        # director / employer / candidate — только свои
-        return get_for_user(self.login)
-
+    # ---------------- Данные ----------------
     def load_data(self):
-        rows = self._fetch_data()
-        self._fill(rows)
+        self._all_rows = visible_rows(self.role, self.login)
+        self.apply_filter()
 
-    def search(self):
+    def apply_filter(self):
         text = self.search_input.text().strip().lower()
-        rows = self._fetch_data()
+        rows = self._all_rows
         if text:
             rows = [
                 r for r in rows
                 if text in (r["user_login"] or "").lower()
-                or text in (r["action"] or "").lower()
+                or text in ACTION_LABELS.get(r["action"], r["action"] or "").lower()
                 or text in (r["entity_type"] or "").lower()
+                or text in (r["details"] or "").lower()
             ]
         self._fill(rows)
 
@@ -72,14 +126,24 @@ class AuditSection(QWidget):
         try:
             self.table.setRowCount(0)
             for r in rows:
-                row = self.table.rowCount()
-                self.table.insertRow(row)
-                self.table.setItem(row, 0, QTableWidgetItem(str(r["id"])))
-                self.table.setItem(row, 1, QTableWidgetItem(r["user_login"] or ""))
-                self.table.setItem(row, 2, QTableWidgetItem(r["user_role"] or ""))
-                self.table.setItem(row, 3, QTableWidgetItem(r["action"] or ""))
-                self.table.setItem(row, 4, QTableWidgetItem(r["entity_type"] or ""))
-                self.table.setItem(row, 5, QTableWidgetItem(str(r["entity_id"] or "")))
-                self.table.setItem(row, 6, QTableWidgetItem(str(r["created_at"] or "")))
+                i = self.table.rowCount()
+                self.table.insertRow(i)
+                values = [
+                    str(r.get("created_at") or ""),
+                    r.get("user_login") or "",
+                    ROLE_LABELS.get(r.get("user_role"), r.get("user_role") or ""),
+                    ACTION_LABELS.get(r.get("action"), r.get("action") or ""),
+                    f"{(r.get('entity_type') or '')}" + (f" №{r['entity_id']}" if r.get("entity_id") is not None else ""),
+                    r.get("details") or "",
+                ]
+                for j, v in enumerate(values):
+                    item = QTableWidgetItem(v)
+                    if j == 3:  # раскраска действия
+                        color = ACTION_COLORS.get(r.get("action"), COLORS["text"])
+                        item.setForeground(QBrush(QColor(color)))
+                        f = QFont(); f.setBold(True)
+                        item.setFont(f)
+                    self.table.setItem(i, j, item)
         finally:
             self.table.blockSignals(False)
+        self.counter.setText(f"Записей: {len(rows)}")

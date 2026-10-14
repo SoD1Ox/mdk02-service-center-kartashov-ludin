@@ -5,8 +5,13 @@
 кнопки «Добавить / Изменить / Удалить / Очистить». Права берутся
 из services/permissions по роли пользователя.
 
+Дополнительно: под таблицей показывается блок «История изменений»
+выбранной записи — чтобы пользователю не открывать общий журнал
+(он виден только администратору).
+
 Наследнику достаточно описать:
     section_key  — ключ раздела в PERMISSIONS;
+    entity_type  — тип объекта в audit_log ('candidate', 'vacancy', ...);
     columns      — заголовки столбцов таблицы;
     fields       — список (имя_поля, метка) для формы;
     fetch()      — загрузка строк (list[dict]);
@@ -20,10 +25,13 @@ from PyQt5.QtWidgets import (
 )
 
 from src.services.permissions import can
+from src.ui.theme import COLORS
+from src.ui.widgets import history_card, EmptyHint
 
 
 class CrudSection(QWidget):
     section_key = ""            # ключ в PERMISSIONS ("candidates", ...)
+    entity_type = ""            # тип объекта в audit_log ("candidate", ...)
     title = "Раздел"
     subtitle = ""
     columns = []                # заголовки столбцов
@@ -95,6 +103,13 @@ class CrudSection(QWidget):
         card_lay.addWidget(self.table)
         root.addWidget(card, 1)
 
+        # ---- История изменений выбранной записи (под таблицей) ----
+        self.history_area = QVBoxLayout()
+        self.history_area.setSpacing(6)
+        self._hint = EmptyHint()
+        self.history_area.addWidget(self._hint)
+        root.addLayout(self.history_area)
+
         # Форма
         form_card = QFrame()
         form_card.setObjectName("Card")
@@ -148,6 +163,28 @@ class CrudSection(QWidget):
             note.setObjectName("Subtitle")
             root.addWidget(note)
 
+    # ---------------- История под записью ----------------
+    def _clear_history_area(self):
+        while self.history_area.count():
+            item = self.history_area.takeAt(0)
+            w = item.widget()
+            if w is not None and w is not self._hint:
+                w.deleteLater()
+        # подсказку держим всегда первой, скрываем когда есть история
+        self._hint.setVisible(True)
+
+    def refresh_history(self):
+        """Показать историю изменений текущей выбранной записи."""
+        self._clear_history_area()
+        card = None
+        if self.entity_type and self.current_id is not None:
+            card = history_card(self.entity_type, self.current_id)
+        if card is not None:
+            self._hint.setVisible(False)
+            self.history_area.addWidget(card)
+        else:
+            self._hint.setVisible(True)
+
     # ---------------- Данные ----------------
     def value(self, name):
         """Значение поля формы по имени."""
@@ -193,8 +230,11 @@ class CrudSection(QWidget):
     def on_row_selected(self):
         sel = self.table.selectionModel().selectedRows()
         if not sel:
+            self.current_id = None
+            self.refresh_history()
             return
         self.fill_form_from_row(sel[0].row())
+        self.refresh_history()
 
     def fill_form_from_row(self, row):
         """Заполнить форму из выбранной строки; id -> self.current_id."""
@@ -221,10 +261,14 @@ class CrudSection(QWidget):
         if self.current_id is None:
             QMessageBox.warning(self, "Выбор не сделан", "Сначала выберите строку в таблице")
             return
+        rid = self.current_id
         try:
             self.do_update()
             self.load_data()
             self.clear_form()
+            # оставляем выбранным изменённый объект и освежаем его историю
+            self._select_row_by_id(rid)
+            self.refresh_history()
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
 
@@ -242,8 +286,17 @@ class CrudSection(QWidget):
             self.do_delete()
             self.load_data()
             self.clear_form()
+            self.refresh_history()
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
+
+    def _select_row_by_id(self, rec_id):
+        for i in range(self.table.rowCount()):
+            it = self.table.item(i, 0)
+            if it is not None and it.text() == str(rec_id):
+                self.table.selectRow(i)
+                return True
+        return False
 
     def do_create(self):
         raise NotImplementedError
