@@ -56,7 +56,7 @@ class AuditSection(QWidget):
             lock.setObjectName("Card")
             lay = QVBoxLayout(lock)
             lay.setContentsMargins(20, 30, 20, 30)
-            lbl = QLabel("🔒 Доступ к журналу запрещён")
+            lbl = QLabel("Доступ к журналу запрещён")
             lbl.setAlignment(Qt.AlignCenter)
             lbl.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLORS['danger']};")
             lay.addWidget(lbl)

@@ -58,10 +58,10 @@ ROLE_SECTIONS = {
 }
 
 SECTION_ICONS = {
-    "Соискатели": "👤", "Моё резюме": "📄", "Резюме": "📄",
-    "Навыки": "🧩", "Работодатели": "🏢", "Вакансии": "💼",
-    "Мои вакансии": "💼", "Отклики": "✉️", "Мои отклики": "✉️",
-    "Сделки": "🤝", "Отчёты": "📊", "Аналитика": "📈", "Журнал": "🛡️",
+    "Соискатели": "\u25c6", "Моё резюме": "\u25a1", "Резюме": "\u25a1",
+    "Навыки": "+", "Работодатели": "\u25b2", "Вакансии": "\u25c7",
+    "Мои вакансии": "\u25c7", "Отклики": "\u2023", "Мои отклики": "\u2023",
+    "Сделки": "\u25c0", "Отчёты": "\u2261", "Аналитика": "\u2197", "Журнал": "\u2605",
 }
 
 
@@ -98,9 +98,9 @@ class MainWindow(QWidget):
         role_lbl.setObjectName("SidebarRole")
         _rc = ROLE_COLORS.get(self.role, COLORS["primary"])
         role_lbl.setStyleSheet(
-            "color: " + COLORS["sidebar_text"] + "; font-weight: bold;"
+            "color: " + COLORS["muted"] + "; font-weight: bold;"
             " border-left: 3px solid " + _rc + ";"
-            " padding-left: 6px;"
+            " padding-left: 6px; background: transparent;"
         )
         side_lay.addWidget(role_lbl)
 
@@ -117,7 +117,7 @@ class MainWindow(QWidget):
         self.menu.currentRowChanged.connect(self.on_menu_changed)
         side_lay.addWidget(self.menu, 1)
 
-        btn_logout = QPushButton("⎋  Выйти")
+        btn_logout = QPushButton("Выйти")
         btn_logout.setObjectName("Logout")
         btn_logout.clicked.connect(self.logout)
         side_lay.addWidget(btn_logout)

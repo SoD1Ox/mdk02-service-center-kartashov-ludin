@@ -1,27 +1,37 @@
-"""Единое оформление приложения: палитра, подписи и QSS для всех окон."""
+"""Единое оформление приложения: тёмно-мятная палитра, подписи и QSS для всех окон.
 
-# ---------------- Палитра ----------------
+Требования стиля:
+  * тёмно-мятная (dark mint / deep teal-green) гамма;
+  * никакой цветной «эмодзи»-графики — только монохромные текстовые символы;
+  * весь текст контрастный и читаемый (светлый на тёмном).
+"""
+
+# ---------------- Палитра (тёмная мята) ----------------
 COLORS = {
-    "primary": "#2f6fed",        # основной акцент (кнопки, выделение)
-    "primary_dark": "#1e4fb8",
-    "bg": "#f4f6fa",             # фон окна
-    "sidebar": "#1d2433",        # тёмный сайдбар
-    "sidebar_text": "#cfd6e4",
-    "card": "#ffffff",           # карточки/таблицы
-    "border": "#dde3ee",
-    "text": "#273043",
-    "muted": "#7b8496",
-    "success": "#1aa260",
-    "danger": "#d64545",
-    "warning": "#e0a100",
+    "primary": "#3ddc97",        # мятный акцент (кнопки, выделение)
+    "primary_dark": "#2bb178",
+    "accent_soft": "rgba(61, 220, 151, 0.14)",
+    "bg": "#0e1f1a",             # основной фон окна (тёмная мята)
+    "bg_alt": "#122823",         # чуть светлее (полосы, подложки)
+    "sidebar": "#0a1713",        # сайдбар — самый тёмный
+    "card": "#15302a",           # карточки/таблицы
+    "card_hover": "#1a3a33",
+    "border": "#2a4a41",
+    "text": "#e8f5ef",           # основной текст — почти белый с мятой ноткой
+    "muted": "#9fc4b8",          # вторичный текст — приглушённая мята
+    "on_primary": "#08130f",     # текст НА мятной кнопке — тёмный
+    "success": "#4fe3a1",
+    "danger": "#ff8f8f",         # мягкий красный, читаемый на тёмном
+    "warning": "#ffd479",
+    "info": "#7fd4c8",
 }
 
 ROLE_COLORS = {
-    "admin": "#d64545",
-    "manager": "#2f6fed",
-    "director": "#7b3ff2",
-    "employer": "#1aa260",
-    "candidate": "#e0a100",
+    "admin": "#ffd479",
+    "manager": "#3ddc97",
+    "director": "#b9a7ff",
+    "employer": "#7fd4c8",
+    "candidate": "#ff9ecb",
 }
 
 ROLE_LABELS = {
@@ -52,80 +62,89 @@ ENTITY_LABELS = {
 
 
 def main_qss() -> str:
-    """QSS для главного окна и всех разделов."""
+    """QSS для главного окна и всех разделов (тёмная мята)."""
     c = COLORS
     return f"""
     QWidget {{
-        font-family: 'Segoe UI', 'Arial', sans-serif;
+        font-family: 'Segoe UI', 'DejaVu Sans', 'Arial', sans-serif;
         font-size: 13px;
         color: {c['text']};
-        background: {c['bg']};
+        background-color: {c['bg']};
+    }}
+    QLabel {{ color: {c['text']}; background-color: transparent; }}
+    QToolTip {{
+        color: {c['text']};
+        background-color: {c['sidebar']};
+        border: 1px solid {c['border']};
     }}
 
     /* ---------- Сайдбар ---------- */
     QFrame#Sidebar {{
-        background: {c['sidebar']};
+        background-color: {c['sidebar']};
         border: none;
     }}
     QLabel#SidebarTitle {{
-        color: #ffffff;
+        color: {c['primary']};
         font-size: 16px;
         font-weight: bold;
         padding: 4px;
+        background-color: transparent;
     }}
     QLabel#SidebarUser {{
-        color: #ffffff;
+        color: {c['text']};
         font-size: 14px;
         font-weight: bold;
         padding: 4px;
+        background-color: transparent;
     }}
     QLabel#SidebarRole {{
-        color: {c['sidebar_text']};
+        color: {c['muted']};
         font-size: 12px;
+        font-weight: bold;
         padding: 2px 4px;
-        background: transparent;
+        background-color: transparent;
     }}
     QLabel#Section {{
-        color: {c['sidebar_text']};
+        color: {c['muted']};
         font-size: 11px;
         font-weight: bold;
         padding-top: 14px;
         padding-left: 6px;
         letter-spacing: 1px;
-        background: transparent;
+        background-color: transparent;
     }}
     QListWidget#Nav {{
-        background: {c['sidebar']};
+        background-color: {c['sidebar']};
         border: none;
         outline: none;
     }}
     QListWidget#Nav::item {{
-        color: {c['sidebar_text']};
+        color: {c['muted']};
         padding: 10px 14px;
         border-radius: 8px;
         margin: 2px 8px;
     }}
     QListWidget#Nav::item:hover {{
-        background: rgba(255, 255, 255, 0.08);
-        color: #ffffff;
+        background-color: rgba(61, 220, 151, 0.10);
+        color: {c['text']};
     }}
     QListWidget#Nav::item:selected {{
-        background: {c['primary']};
-        color: #ffffff;
+        background-color: {c['primary']};
+        color: {c['on_primary']};
         font-weight: bold;
     }}
 
     QPushButton#Logout {{
-        background: transparent;
-        color: {c['sidebar_text']};
-        border: 1px solid rgba(255,255,255,0.25);
+        background-color: transparent;
+        color: {c['muted']};
+        border: 1px solid {c['border']};
         border-radius: 8px;
         padding: 8px;
     }}
     QPushButton#Logout:hover {{
-        background: {c['danger']};
+        background-color: {c['danger']};
         border-color: {c['danger']};
-        color: #ffffff;
+        color: {c['on_primary']};
     }}
 
     /* ---------- Контент ---------- */
@@ -134,151 +153,196 @@ def main_qss() -> str:
         font-weight: bold;
         color: {c['text']};
         padding-bottom: 2px;
-        background: transparent;
+        background-color: transparent;
     }}
     QLabel#Subtitle {{
         font-size: 13px;
         color: {c['muted']};
         padding-bottom: 10px;
-        background: transparent;
+        background-color: transparent;
     }}
     QLabel#GroupBox {{
         font-size: 14px;
         font-weight: bold;
-        color: {c['text']};
-        background: transparent;
+        color: {c['primary']};
+        background-color: transparent;
     }}
 
     QFrame#Card {{
-        background: {c['card']};
+        background-color: {c['card']};
         border: 1px solid {c['border']};
         border-radius: 10px;
     }}
 
     /* Карточка истории изменений под записью */
     QFrame#HistoryCard {{
-        background: #f2f7ff;
-        border: 1px solid #c9dcf5;
+        background-color: {c['bg_alt']};
+        border: 1px solid {c['border']};
         border-left: 4px solid {c['primary']};
         border-radius: 8px;
     }}
 
     /* ---------- Таблицы ---------- */
     QTableView, QTableWidget {{
-        background: {c['card']};
+        background-color: {c['card']};
+        alternate-background-color: {c['bg_alt']};
         border: 1px solid {c['border']};
         border-radius: 8px;
         gridline-color: {c['border']};
+        color: {c['text']};
         selection-background-color: {c['primary']};
-        selection-color: #ffffff;
+        selection-color: {c['on_primary']};
+    }}
+    QTableView::item, QTableWidget::item {{
+        color: {c['text']};
+        padding: 4px 6px;
+    }}
+    QTableView::item:selected, QTableWidget::item:selected {{
+        background-color: {c['primary']};
+        color: {c['on_primary']};
     }}
     QHeaderView::section {{
-        background: #eef1f7;
-        color: {c['text']};
+        background-color: {c['bg_alt']};
+        color: {c['primary']};
         font-weight: bold;
         padding: 6px 8px;
         border: none;
         border-right: 1px solid {c['border']};
         border-bottom: 1px solid {c['border']};
     }}
-    QTableWidget::item {{ padding: 4px 6px; }}
 
     /* ---------- Поля ввода ---------- */
     QLineEdit, QComboBox, QTextEdit, QPlainTextEdit {{
-        background: {c['card']};
+        background-color: {c['bg_alt']};
+        color: {c['text']};
         border: 1px solid {c['border']};
         border-radius: 6px;
         padding: 6px 8px;
         selection-background-color: {c['primary']};
+        selection-color: {c['on_primary']};
     }}
-    QLineEdit:focus, QComboBox:focus, QTextEdit:focus {{
+    QLineEdit:focus, QComboBox:focus, QTextEdit:focus, QPlainTextEdit:focus {{
         border: 1px solid {c['primary']};
     }}
     QLineEdit:read-only {{
-        background: #f0f2f6;
+        background-color: {c['sidebar']};
         color: {c['muted']};
+    }}
+    QComboBox::drop-down {{
+        border: none;
+        width: 22px;
+    }}
+    QComboBox QAbstractItemView {{
+        background-color: {c['card']};
+        color: {c['text']};
+        border: 1px solid {c['border']};
+        selection-background-color: {c['primary']};
+        selection-color: {c['on_primary']};
+    }}
+    QCheckBox {{ color: {c['text']}; background-color: transparent; spacing: 6px; }}
+    QCheckBox::indicator {{
+        width: 16px; height: 16px;
+        border: 1px solid {c['border']};
+        border-radius: 4px;
+        background-color: {c['bg_alt']};
+    }}
+    QCheckBox::indicator:checked {{
+        background-color: {c['primary']};
+        border-color: {c['primary']};
     }}
 
     /* ---------- Кнопки ---------- */
     QPushButton {{
-        background: {c['card']};
+        background-color: {c['card']};
+        color: {c['text']};
         border: 1px solid {c['border']};
         border-radius: 6px;
         padding: 7px 14px;
         font-weight: 600;
     }}
-    QPushButton:hover {{ background: #eef1f7; }}
-    QPushButton:pressed {{ background: #e2e7f0; }}
-    QPushButton:disabled {{ color: {c['muted']}; background: #eef1f7; }}
+    QPushButton:hover {{ background-color: {c['card_hover']}; border-color: {c['primary']}; }}
+    QPushButton:pressed {{ background-color: {c['bg_alt']}; }}
+    QPushButton:disabled {{ color: {c['muted']}; background-color: {c['bg_alt']}; border-color: {c['border']}; }}
 
     QPushButton#Primary {{
-        background: {c['primary']};
+        background-color: {c['primary']};
         border: 1px solid {c['primary']};
-        color: #ffffff;
+        color: {c['on_primary']};
     }}
-    QPushButton#Primary:hover {{ background: {c['primary_dark']}; }}
+    QPushButton#Primary:hover {{ background-color: {c['primary_dark']}; border-color: {c['primary_dark']}; }}
+    QPushButton#Primary:disabled {{ background-color: {c['bg_alt']}; color: {c['muted']}; border-color: {c['border']}; }}
 
     QPushButton#Danger {{
-        background: {c['danger']};
+        background-color: transparent;
         border: 1px solid {c['danger']};
-        color: #ffffff;
+        color: {c['danger']};
     }}
-    QPushButton#Danger:hover {{ background: #b83636; }}
+    QPushButton#Danger:hover {{ background-color: {c['danger']}; color: {c['on_primary']}; }}
 
     /* ---------- Прочее ---------- */
-    QStatusBar {{ background: {c['card']}; border-top: 1px solid {c['border']}; }}
+    QStatusBar {{ background-color: {c['sidebar']}; color: {c['muted']}; border-top: 1px solid {c['border']}; }}
+    QMessageBox {{ background-color: {c['card']}; }}
+    QMessageBox QLabel {{ color: {c['text']}; }}
+    QDialogButtonBox QPushButton {{ min-width: 80px; }}
     QScrollBar:vertical {{ width: 10px; background: transparent; }}
     QScrollBar::handle:vertical {{
-        background: #c3cad8; border-radius: 5px; min-height: 30px;
+        background: {c['border']}; border-radius: 5px; min-height: 30px;
     }}
+    QScrollBar::handle:vertical:hover {{ background: {c['primary']}; }}
     QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
+    QScrollBar:horizontal {{ height: 10px; background: transparent; }}
+    QScrollBar::handle:horizontal {{
+        background: {c['border']}; border-radius: 5px; min-width: 30px;
+    }}
     """
 
 
 def login_qss() -> str:
-    """QSS для окна входа (тёмная подложка + светлая карточка)."""
+    """QSS для окна входа (тёмная мята)."""
     c = COLORS
     return f"""
     QWidget {{
-        font-family: 'Segoe UI', 'Arial', sans-serif;
+        font-family: 'Segoe UI', 'DejaVu Sans', 'Arial', sans-serif;
         font-size: 13px;
         color: {c['text']};
-        background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-            stop:0 #1d2433, stop:1 #2f3a52);
+        background-color: {c['sidebar']};
     }}
     QFrame#LoginCard {{
-        background: {c['card']};
+        background-color: {c['card']};
         border: 1px solid {c['border']};
         border-radius: 14px;
     }}
     QLabel#LoginTitle {{
-        font-size: 20px;
+        font-size: 21px;
         font-weight: bold;
-        color: {c['text']};
-        background: transparent;
+        color: {c['primary']};
+        background-color: transparent;
     }}
     QLabel#LoginSub {{
         font-size: 12px;
         color: {c['muted']};
-        background: transparent;
+        background-color: transparent;
     }}
-    QLabel {{ color: {c['text']}; background: transparent; }}
+    QLabel {{ color: {c['text']}; background-color: transparent; }}
     QLineEdit {{
-        background: #f7f9fc;
+        background-color: {c['bg_alt']};
+        color: {c['text']};
         border: 1px solid {c['border']};
         border-radius: 8px;
         padding: 9px 10px;
+        selection-background-color: {c['primary']};
+        selection-color: {c['on_primary']};
     }}
     QLineEdit:focus {{ border: 1px solid {c['primary']}; }}
     QPushButton#LoginBtn {{
-        background: {c['primary']};
-        color: #ffffff;
+        background-color: {c['primary']};
+        color: {c['on_primary']};
         border: none;
         border-radius: 8px;
         padding: 10px;
         font-size: 14px;
         font-weight: bold;
     }}
-    QPushButton#LoginBtn:hover {{ background: {c['primary_dark']}; }}
-    QLabel#Hint {{ color: {c['muted']}; font-size: 11px; background: transparent; }}
+    QPushButton#LoginBtn:hover {{ background-color: {c['primary_dark']}; }}
+    QLabel#Hint {{ color: {c['muted']}; font-size: 11px; background-color: transparent; }}
     """
