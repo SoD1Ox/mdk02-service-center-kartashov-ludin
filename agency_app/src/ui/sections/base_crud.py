@@ -32,6 +32,7 @@ from src.ui.widgets import history_card, EmptyHint
 class CrudSection(QWidget):
     section_key = ""            # ключ в PERMISSIONS ("candidates", ...)
     entity_type = ""            # тип объекта в audit_log ("candidate", ...)
+    icon_name = "doc"           # кастомный значок раздела (см. ui/icons.py)
     title = "Раздел"
     subtitle = ""
     columns = []                # заголовки столбцов
@@ -58,14 +59,25 @@ class CrudSection(QWidget):
         root.setContentsMargins(24, 20, 24, 20)
         root.setSpacing(12)
 
-        # Заголовок страницы
+        # Заголовок страницы с кастомным значком раздела
+        head_row = QHBoxLayout()
+        head_row.setSpacing(10)
+        from src.ui.icons import icon as _icon
+        lbl_icon = QLabel()
+        lbl_icon.setPixmap(_icon(self.icon_name, color=COLORS["primary"], size=30).pixmap(30, 30))
+        head_row.addWidget(lbl_icon)
+        title_box = QVBoxLayout()
+        title_box.setSpacing(0)
         lbl_title = QLabel(self.title)
         lbl_title.setObjectName("PageTitle")
-        root.addWidget(lbl_title)
+        title_box.addWidget(lbl_title)
         if self.subtitle:
             lbl_sub = QLabel(self.subtitle)
             lbl_sub.setObjectName("Subtitle")
-            root.addWidget(lbl_sub)
+            title_box.addWidget(lbl_sub)
+        head_row.addLayout(title_box)
+        head_row.addStretch()
+        root.addLayout(head_row)
 
         # Поиск
         if self.searchable:
@@ -77,10 +89,12 @@ class CrudSection(QWidget):
 
             btn_find = QPushButton("Найти")
             btn_find.setObjectName("Primary")
+            btn_find.setIcon(_icon("search", color=COLORS["on_primary"]))
             btn_find.clicked.connect(self.search)
             row.addWidget(btn_find)
 
             btn_reset = QPushButton("Сбросить")
+            btn_reset.setIcon(_icon("refresh"))
             btn_reset.clicked.connect(self.load_data)
             row.addWidget(btn_reset)
             root.addLayout(row)
@@ -131,20 +145,24 @@ class CrudSection(QWidget):
         form_lay.addLayout(grid)
         root.addWidget(form_card)
 
-        # Кнопки
+        # Кнопки (с кастомными чёрно-белыми значками)
         btns = QHBoxLayout()
-        self.btn_add = QPushButton("+  Добавить")
+        self.btn_add = QPushButton("Добавить")
         self.btn_add.setObjectName("Primary")
+        self.btn_add.setIcon(_icon("plus", color=COLORS["on_primary"]))
         self.btn_add.clicked.connect(self.add_record)
 
         self.btn_edit = QPushButton("Изменить")
+        self.btn_edit.setIcon(_icon("edit"))
         self.btn_edit.clicked.connect(self.update_record)
 
         self.btn_del = QPushButton("Удалить")
         self.btn_del.setObjectName("Danger")
+        self.btn_del.setIcon(_icon("trash", color=COLORS["danger"]))
         self.btn_del.clicked.connect(self.delete_record)
 
         self.btn_clear = QPushButton("Очистить форму")
+        self.btn_clear.setIcon(_icon("refresh"))
         self.btn_clear.clicked.connect(self.clear_form)
 
         for b, p in [(self.btn_add, "add"), (self.btn_edit, "edit"),

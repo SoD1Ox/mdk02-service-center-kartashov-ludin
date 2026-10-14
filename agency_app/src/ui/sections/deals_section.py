@@ -5,6 +5,7 @@ from src.ui.sections.base_crud import CrudSection
 class DealsSection(CrudSection):
     section_key = "deals"
     entity_type = "deal"
+    icon_name = "handshake"
     title = "Сделки"
     subtitle = "Закрытые сделки агентства (комиссия и налог)"
     columns = ["id", "ID отклика", "Комиссия", "Налог", "Дата"]

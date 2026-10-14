@@ -5,6 +5,7 @@ from src.ui.sections.base_crud import CrudSection
 class EmployersSection(CrudSection):
     section_key = "employers"
     entity_type = "employer"
+    icon_name = "building"
     title = "Работодатели"
     subtitle = "Компании-заказчики вакансий"
     columns = ["id", "Название", "ИНН", "Контакт", "Телефон"]

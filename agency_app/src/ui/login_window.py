@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit,
-    QPushButton, QVBoxLayout, QMessageBox, QFrame,
+    QPushButton, QVBoxLayout, QHBoxLayout, QMessageBox, QFrame,
 )
 
 from src.services.auth_service import AuthService
@@ -42,13 +42,28 @@ class LoginWindow(QWidget):
         sub.setAlignment(Qt.AlignCenter)
         lay.addWidget(sub)
 
+        # кастомные значки у полей ввода (чёрно-белые, рисуются кодом)
+        from src.ui.icons import icon
+        from src.ui.theme import COLORS
         lay.addSpacing(8)
-        lay.addWidget(QLabel("Логин"))
+        row_user = QHBoxLayout()
+        lbl_u = QLabel()
+        lbl_u.setPixmap(icon("users", color=COLORS["muted"], size=18).pixmap(18, 18))
+        row_user.addWidget(lbl_u)
+        row_user.addWidget(QLabel("Логин"))
+        row_user.addStretch()
+        lay.addLayout(row_user)
         self.login = QLineEdit()
         self.login.setPlaceholderText("Введите логин")
         lay.addWidget(self.login)
 
-        lay.addWidget(QLabel("Пароль"))
+        row_p = QHBoxLayout()
+        lbl_k = QLabel()
+        lbl_k.setPixmap(icon("key", color=COLORS["muted"], size=18).pixmap(18, 18))
+        row_p.addWidget(lbl_k)
+        row_p.addWidget(QLabel("Пароль"))
+        row_p.addStretch()
+        lay.addLayout(row_p)
         self.password = QLineEdit()
         self.password.setPlaceholderText("Введите пароль")
         self.password.setEchoMode(QLineEdit.Password)
