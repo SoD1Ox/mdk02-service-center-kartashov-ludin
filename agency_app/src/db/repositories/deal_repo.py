@@ -6,8 +6,14 @@ def get_all(db_path=DB_PATH):
     with get_connection(db_path) as conn:
         rows = conn.execute("""
             SELECT d.id, d.response_id, d.commission, d.tax, d.closed_at,
-                   d.created_by, d.updated_by, d.updated_at
+                   d.created_by, d.updated_by, d.updated_at,
+                   c.full_name AS candidate_name, v.title AS vacancy_title,
+                   e.name AS employer_name
             FROM deals d
+            LEFT JOIN responses r ON r.id = d.response_id
+            LEFT JOIN candidates c ON c.id = r.candidate_id
+            LEFT JOIN vacancies v ON v.id = r.vacancy_id
+            LEFT JOIN employers e ON e.id = v.employer_id
             ORDER BY d.id
         """).fetchall()
         return [dict(r) for r in rows]

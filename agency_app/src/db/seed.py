@@ -46,7 +46,7 @@ def seed_data(db_path=DB_PATH):
         # --- CANDIDATES (3) ---
         candidate_ids = []
         for name, phone, email in [
-            ("Иванов Иван", "+7-900-111-11-11", "ivanov@example.com"),
+            ("Иванов Иван", "+7-900-111-11-11", "candidate@agency.ru"),
             ("Петрова Мария", "+7-900-222-22-22", "petrova@example.com"),
             ("Сидоров Пётр", "+7-900-333-33-33", "sidorov@example.com"),
         ]:
@@ -75,7 +75,7 @@ def seed_data(db_path=DB_PATH):
         # --- EMPLOYERS (3) ---
         employer_ids = []
         for name, inn, contact, phone in [
-            ("ООО Ромашка", "7701234567", "Козлов А.", "+7-495-111-11-11"),
+            ("ООО Ромашка", "7701234567", "employer@romashka.ru", "+7-495-111-11-11"),
             ("АО ТехноСофт", "7709876543", "Белова Н.", "+7-495-222-22-22"),
             ("ИП Смирнов", "7705555555", "Смирнов И.", "+7-495-333-33-33"),
         ]:

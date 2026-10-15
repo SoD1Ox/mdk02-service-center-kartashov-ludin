@@ -30,11 +30,13 @@ PERMISSIONS = {
     },
     "employer": {
         "vacancies":  ["view", "add", "edit"],
-        "responses":  ["view"],
+        # работодатель двигает статусы откликов на его вакансии (BR-02)
+        "responses":  ["view", "edit"],
     },
     "candidate": {
         "resumes":    ["view", "add", "edit"],
-        "vacancies":  ["view"],
+        # «add» у вакансий для соискателя = откликнуться на вакансию
+        "vacancies":  ["view", "add"],
         "responses":  ["view", "add", "delete"],
     },
 }

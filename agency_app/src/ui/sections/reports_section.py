@@ -22,9 +22,21 @@ class ReportsSection(QWidget):
         layout.setContentsMargins(24, 20, 24, 20)
         layout.setSpacing(12)
 
+        from src.ui.icons import icon as _icon
+        head_row = QHBoxLayout()
+        head_row.setSpacing(10)
+        lbl_icon = QLabel()
+        lbl_icon.setPixmap(_icon("chart", color=COLORS["primary"], size=30).pixmap(30, 30))
+        head_row.addWidget(lbl_icon)
+        ttl_box = QVBoxLayout()
+        ttl_box.setSpacing(0)
         title = QLabel("Отчёты")
         title.setObjectName("PageTitle")
-        layout.addWidget(title)
+        ttl_box.addWidget(title)
+        sub = None
+        head_row.addLayout(ttl_box)
+        head_row.addStretch()
+        layout.addLayout(head_row)
 
         sub = QLabel("Сводные показатели работы кадрового агентства")
         sub.setObjectName("Subtitle")
@@ -58,8 +70,12 @@ class ReportsSection(QWidget):
 
         # Кнопка обновления
         btn_row = QHBoxLayout()
-        btn = QPushButton("⟳  Обновить")
+        btn = QPushButton("Обновить")
         btn.setObjectName("Primary")
+        try:
+            btn.setIcon(_icon("refresh", color=COLORS["on_primary"]))
+        except NameError:
+            pass
         btn.clicked.connect(self.load_data)
         btn_row.addWidget(btn)
         btn_row.addStretch()

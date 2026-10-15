@@ -5,6 +5,7 @@ from src.ui.sections.base_crud import CrudSection
 class SkillsSection(CrudSection):
     section_key = "skills"
     entity_type = "skill"
+    icon_name = "star"
     title = "Навыки"
     subtitle = "Справочник навыков для резюме и вакансий"
     columns = ["id", "Название", "Категория"]

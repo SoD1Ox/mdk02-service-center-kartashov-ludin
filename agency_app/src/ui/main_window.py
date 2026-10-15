@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import (
 )
 
 from src.services.permissions import can
-from src.ui.theme import COLORS, ROLE_COLORS, ROLE_LABELS
+from src.ui.icons import icon
+from src.ui.theme import COLORS, ROLE_COLORS, ROLE_LABELS, main_qss
 from src.ui.sections.candidates_section import CandidatesSection
 from src.ui.sections.resumes_section import ResumesSection
 from src.ui.sections.skills_section import SkillsSection
@@ -29,7 +30,7 @@ SECTION_CLASSES = {
     "Мои вакансии": VacanciesSection,
     "Моё резюме":   ResumesSection,
     "Отклики":      ResponsesSection,
-    "Мои отклики":  ResponsesSection,
+    "Мои отклики":  ResponsesSection,   # и у соискателя, и у работодателя
     "Сделки":       DealsSection,
     "Отчёты":       ReportsSection,
     "Аналитика":    AnalyticsSection,
@@ -50,18 +51,19 @@ ROLE_SECTIONS = {
         "Отчёты", "Аналитика", "Сделки", "Соискатели", "Вакансии",
     ],
     "employer": [
-        "Мои вакансии", "Отклики",
+        "Мои вакансии", "Мои отклики",
     ],
     "candidate": [
         "Моё резюме", "Вакансии", "Мои отклики",
     ],
 }
 
+# Кастомные чёрно-белые значки разделов (рисуются кодом, см. src/ui/icons.py)
 SECTION_ICONS = {
-    "Соискатели": "\u25c6", "Моё резюме": "\u25a1", "Резюме": "\u25a1",
-    "Навыки": "+", "Работодатели": "\u25b2", "Вакансии": "\u25c7",
-    "Мои вакансии": "\u25c7", "Отклики": "\u2023", "Мои отклики": "\u2023",
-    "Сделки": "\u25c0", "Отчёты": "\u2261", "Аналитика": "\u2197", "Журнал": "\u2605",
+    "Соискатели": "users", "Моё резюме": "doc", "Резюме": "doc",
+    "Навыки": "star", "Работодатели": "building", "Вакансии": "briefcase",
+    "Мои вакансии": "briefcase", "Отклики": "mail", "Мои отклики": "mail",
+    "Сделки": "handshake", "Отчёты": "chart", "Аналитика": "trend", "Журнал": "shield",
 }
 
 
@@ -71,6 +73,10 @@ class MainWindow(QWidget):
         self.user = user
         self.role = user.get("role", "candidate")
         self.current_section = None
+
+        # Тёмно-мятная тема применяется здесь, а не только после логина —
+        # иначе окно, открытое напрямую (или при выходе), остаётся светлым.
+        self.setStyleSheet(main_qss())
 
         self.setWindowTitle(f"ИС «Кадровое агентство» — {user['login']}")
         self.resize(1100, 680)
@@ -86,9 +92,16 @@ class MainWindow(QWidget):
         side_lay.setContentsMargins(14, 18, 14, 14)
         side_lay.setSpacing(4)
 
-        logo = QLabel("◆ Кадровое агентство")
+        logo_row = QHBoxLayout()
+        logo_row.setSpacing(8)
+        logo_icon = QLabel()
+        logo_icon.setPixmap(icon("briefcase", color=COLORS["primary"], size=26).pixmap(26, 26))
+        logo_row.addWidget(logo_icon)
+        logo = QLabel("Кадровое агентство")
         logo.setObjectName("SidebarTitle")
-        side_lay.addWidget(logo)
+        logo_row.addWidget(logo)
+        logo_row.addStretch()
+        side_lay.addLayout(logo_row)
 
         name = QLabel(user["login"])
         name.setObjectName("SidebarUser")
@@ -112,13 +125,23 @@ class MainWindow(QWidget):
         self.menu = QListWidget()
         self.menu.setObjectName("Nav")
         for s in self.sections:
-            self.menu.addItem(f"{SECTION_ICONS.get(s, '•')}  {s}")
+            self.menu.addItem(s)
+            item = self.menu.item(self.menu.count() - 1)
+            # иконка в двух вариантах: обычная (muted) и выбранная (тёмная на мятом)
+            pm_normal = icon(SECTION_ICONS.get(s, "doc"), color=COLORS["muted"], size=20).pixmap(20, 20)
+            pm_active = icon(SECTION_ICONS.get(s, "doc"), color=COLORS["on_primary"], size=20).pixmap(20, 20)
+            from PyQt5.QtGui import QIcon
+            ic = QIcon()
+            ic.addPixmap(pm_normal, QIcon.Normal)
+            ic.addPixmap(pm_active, QIcon.Selected)
+            item.setIcon(ic)
         self.menu.setFixedWidth(220)
         self.menu.currentRowChanged.connect(self.on_menu_changed)
         side_lay.addWidget(self.menu, 1)
 
         btn_logout = QPushButton("Выйти")
         btn_logout.setObjectName("Logout")
+        btn_logout.setIcon(icon("logout", color=COLORS["muted"]))
         btn_logout.clicked.connect(self.logout)
         side_lay.addWidget(btn_logout)
 
